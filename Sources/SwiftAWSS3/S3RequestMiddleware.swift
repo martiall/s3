@@ -20,19 +20,22 @@ struct S3RequestMiddleware: AWSRequestMiddleware {
                 let port = request.url.port == nil ? "" : ":\(request.url.port!)"
                 domain = request.url.host!+port
             }
-            request.url = URL(string: "\(request.url.scheme ?? "https")://\(paths.removeFirst()).\(domain)/\(paths.joined(separator: "/"))\(query)")!
+            let bucket = paths.removeFirst()
+            let encodedPaths = paths.flatMap { $0.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) }
+            request.url = URL(string: "\(request.url.scheme ?? "https")://\(bucket).\(domain)/\(encodedPaths.joined(separator: "/"))\(query)")!
         default:
             guard let host = request.url.host, host.contains("amazonaws.com") else { break }
-            var pathes = request.url.path.components(separatedBy: "/")
+            var paths = request.url.path.components(separatedBy: "/")
             if paths.count > 1 {
-                _ = pathes.removeFirst() // /
-                let bucket = pathes.removeFirst() // bucket
+                _ = paths.removeFirst() // /
+                let bucket = paths.removeFirst() // bucket
                 var urlString: String
+                let encodedPaths = paths.flatMap { $0.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) }
                 if let firstHostComponent = host.components(separatedBy: ".").first, bucket == firstHostComponent {
                     // Bucket name is part of host. No need to append bucket
-                    urlString = "https://\(host)/\(pathes.joined(separator: "/"))"
+                    urlString = "https://\(host)/\(encodedPaths.joined(separator: "/"))"
                 } else {
-                    urlString = "https://\(bucket).\(host)/\(pathes.joined(separator: "/"))"
+                    urlString = "https://\(bucket).\(host)/\(encodedPaths.joined(separator: "/"))"
                 }
                 if let query = request.url.query {
                     urlString += "?\(query)"
