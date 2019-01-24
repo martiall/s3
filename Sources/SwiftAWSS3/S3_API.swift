@@ -10,7 +10,7 @@ public struct S3 {
 
     let client: AWSClient
 
-    public init(accessKeyId: String? = nil, secretAccessKey: String? = nil, region: AWSSDKSwiftCore.Region? = nil, endpoint: String? = nil) {
+    public init(accessKeyId: String? = nil, secretAccessKey: String? = nil, region: AWSSDKSwiftCore.Region? = nil, endpoint: String? = nil, middlewares: [AWSRequestMiddleware]? = nil) {
         self.client = AWSClient(
             accessKeyId: accessKeyId,
             secretAccessKey: secretAccessKey,
@@ -21,7 +21,7 @@ public struct S3 {
             endpoint: endpoint,
             serviceEndpoints: ["s3-external-1": "s3-external-1.amazonaws.com", "ap-southeast-1": "s3.ap-southeast-1.amazonaws.com", "us-west-1": "s3.us-west-1.amazonaws.com", "sa-east-1": "s3.sa-east-1.amazonaws.com", "ap-northeast-1": "s3.ap-northeast-1.amazonaws.com", "eu-west-1": "s3.eu-west-1.amazonaws.com", "us-west-2": "s3.us-west-2.amazonaws.com", "ap-southeast-2": "s3.ap-southeast-2.amazonaws.com", "us-east-1": "s3.amazonaws.com"],
             partitionEndpoint: "us-east-1",
-            middlewares: [S3RequestMiddleware()],
+            middlewares: middlewares ?? [S3RequestMiddleware()],
             possibleErrorTypes: [S3Error.self]
         )
     }
